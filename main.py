@@ -16,7 +16,7 @@ app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"],
                    allow_methods=["*"], allow_headers=["*"])
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="static", html=True), name="static")
 
 EVOLUTIONS = [
     (0,    "🥚", "Egg"),
@@ -53,10 +53,6 @@ class LogSessionRequest(BaseModel):
 async def startup():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-
-@app.get("/")
-async def root():
-    return {"message": "CodePet API is running!"}
 
 @app.post("/register")
 async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
