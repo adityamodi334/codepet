@@ -191,3 +191,33 @@ async def leaderboard(db: AsyncSession = Depends(get_db)):
         }
         for i, p in enumerate(players)
     ]
+@app.get("/admin/players")
+async def get_all_players(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Player))
+    players = result.scalars().all()
+
+    return [
+        {
+            "id": p.id,
+            "username": p.username,
+            "pet_name": p.pet_name,
+            "xp": p.xp,
+            "streak": p.streak,
+            "total_mins": p.total_mins
+        }
+        for p in players
+    ]
+
+
+@app.delete("/admin/player/{player_id}")
+async def delete_player(player_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Player).where(Player.id == player_id))
+    player = result.scalar()
+
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+
+    await db.delete(player)
+    await db.commit()
+
+    return {"message": "Player deleted"}
